@@ -1,0 +1,8 @@
+CMakeFiles/
+src/main/c/CMakeFiles
+CMakeCache.txt
+target
+.vs/
+.idea/
+build/
+*.class
