@@ -1,12 +1,14 @@
 # local_jstack
+
+在本地 JVM 进程（非进程间）中通过臊气的 JNI 方式进行类似 jstack 的线程转储
+
 Thread dump like jstack in local JVM process (not interprocess) by dirty JNI way
 
 ## 限制 limitation
 
 仅支持linux
 
-## 上手
-## get start
+## 上手 get start
 
 1.  首先找到JRE环境的`libjvm.so`中的[thread_dump(AttachOperation*, outputStream*)](https://github.com/openjdk/jdk/blob/742e735d7f6c4ee9ca5a4d290c59d7d6ec1f7635/src/hotspot/share/services/attachListener.cpp#L209)函数的偏移量
 
