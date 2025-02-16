@@ -1,13 +1,8 @@
 #include "app_LocalJStack.h"
 #include "jvm_def.h"
-#include "spdlog/spdlog.h"
 #include <iostream>
-#include <fstream>
-#include <sstream>
 #include <string>
 #include <sys/types.h>
-// #include <sys/stat.h>
-
 
 // 操作系统检测宏
 #if defined(_WIN32) || defined(_WIN64)
@@ -114,9 +109,6 @@ uintptr_t getLibraryBaseAddress(const std::string& libraryName)
 
 JNIEXPORT void JNICALL Java_app_LocalJStack_init(JNIEnv *env, jclass cls, jlong threadDumpOffset)
 {
-    spdlog::set_level(spdlog::level::debug);
-    spdlog::set_pattern("[%Y-%m-%d %H:%M:%S.%e] [%n] [%^---%L---%$] [pid %P thread %t] %v");
-
     uintptr_t libjvm_base = 
 #ifdef OS_WINDOWS
     getLibraryBaseAddress("libjvm.dll");
@@ -127,17 +119,15 @@ JNIEXPORT void JNICALL Java_app_LocalJStack_init(JNIEnv *env, jclass cls, jlong 
 #endif
     uintptr_t threadDumpAddress = threadDumpOffset + libjvm_base;
 
-    spdlog::info("libjvm_base:{},threadDumpAddress:{}", libjvm_base, threadDumpAddress);
-
     thread_dump = (ThreadDumpFunc)threadDumpAddress;
 }
 
-JNIEXPORT void JNICALL Java_app_LocalJStack_dumpStack(JNIEnv *env, jclass cls, jobject writer)
+JNIEXPORT jint JNICALL Java_app_LocalJStack_dumpStack(JNIEnv *env, jclass cls, jobject writer)
 {
     if (thread_dump == nullptr)
     {
-        spdlog::error("thread_dump not init");
-        exit(1);
+        std::cerr << "not initialized" << std::endl;
+        return 1;
     }
 
     AttachOperation ao = AttachOperation((char *)"thread_dump");
@@ -149,22 +139,20 @@ JNIEXPORT void JNICALL Java_app_LocalJStack_dumpStack(JNIEnv *env, jclass cls, j
 
     char *dump_result = buf.as_string();
 
-    spdlog::info("dump_result, len:{}, buf.size:{}", strlen(dump_result), buf.size());
-
     jclass writerClass = env->GetObjectClass(writer);
 
     if (writerClass == NULL)
     {
-        spdlog::error("writer class not found");
-        return;
+        std::cerr << "writer class not found" << std::endl;
+        return 2;
     }
 
     // 获取 write(char[],int,int) 方法的 methodID
     jmethodID writeMethodID = env->GetMethodID(writerClass, "write", "([CII)V");
     if (writeMethodID == NULL)
     {
-        spdlog::error("append method not found");
-        return;
+        std::cerr << "method not found: void write(char[] cbuf, int off, int len)" << std::endl;
+        return 3;
     }
 
     jcharArray jResult = env->NewCharArray(buf.size());
@@ -179,4 +167,6 @@ JNIEXPORT void JNICALL Java_app_LocalJStack_dumpStack(JNIEnv *env, jclass cls, j
     env->CallVoidMethod(writer, writeMethodID, jResult, 0, buf.size());
 
     free(resultChars);
+
+    return 0;
 }

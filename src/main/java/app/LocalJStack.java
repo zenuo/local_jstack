@@ -67,6 +67,7 @@ public class LocalJStack {
      * 打印当前JVM的线程栈
      * 
      * @param writer 输出流
+     * @return 执行是否成功，0表示成功
      */
-    public static synchronized native void dumpStack(Writer writer);
+    public static synchronized native int dumpStack(Writer writer);
 }

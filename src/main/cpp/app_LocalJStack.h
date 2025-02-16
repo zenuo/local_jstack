@@ -20,7 +20,7 @@ JNIEXPORT void JNICALL Java_app_LocalJStack_init
  * Method:    dumpStack
  * Signature: (Ljava/io/Writer;)V
  */
-JNIEXPORT void JNICALL Java_app_LocalJStack_dumpStack
+JNIEXPORT jint JNICALL Java_app_LocalJStack_dumpStack
   (JNIEnv *, jclass, jobject);
 
 #ifdef __cplusplus
