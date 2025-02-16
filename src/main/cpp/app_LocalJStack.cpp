@@ -10,10 +10,17 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
+#ifdef __APPLE__
+#include <mach-o/dyld.h>
+#include <mach-o/getsect.h>
+#include <dlfcn.h>
+#endif
+
 typedef jint (*ThreadDumpFunc)(AttachOperation *, outputStream *);
 
 static ThreadDumpFunc thread_dump = nullptr;
 
+#ifndef __APPLE__
 uintptr_t get_libjvm_base_address(pid_t pid)
 {
     std::stringstream maps_path;
@@ -35,6 +42,33 @@ uintptr_t get_libjvm_base_address(pid_t pid)
     }
     return 0;
 }
+#endif
+
+#ifdef __APPLE__
+uintptr_t get_libjvm_base_address(pid_t pid)
+{
+    // 获取当前进程中加载的动态库数量
+    uint32_t count = _dyld_image_count();
+
+    for (uint32_t i = 0; i < count; i++) {
+        // 获取动态库的路径
+        const char* imageName = _dyld_get_image_name(i);
+        if (imageName == nullptr) {
+            continue;
+        }
+
+        // 检查动态库名称是否匹配
+        std::string currentImageName(imageName);
+        if (currentImageName.find("libjvm.dylib") != std::string::npos) {
+            // 返回动态库的基地址
+            return (uintptr_t)_dyld_get_image_header(i);
+        }
+    }
+
+    // 如果未找到，返回 0
+    return 0;
+}
+#endif
 
 JNIEXPORT void JNICALL Java_app_LocalJStack_init(JNIEnv *env, jclass cls, jlong threadDumpOffset)
 {
