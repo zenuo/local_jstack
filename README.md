@@ -8,6 +8,8 @@ Thread dump like jstack in local JVM process (not interprocess) by dirty JNI way
 
 仅支持linux
 
+only linux
+
 ## 上手 get start
 
 1.  首先找到JRE环境的`libjvm.so`中的[thread_dump(AttachOperation*, outputStream*)](https://github.com/openjdk/jdk/blob/742e735d7f6c4ee9ca5a4d290c59d7d6ec1f7635/src/hotspot/share/services/attachListener.cpp#L209)函数的偏移量
@@ -32,7 +34,7 @@ Thread dump like jstack in local JVM process (not interprocess) by dirty JNI way
 
 4. 使用java.io.Writer来承接线程栈
     ```java
-    java.io.StringWriter writer = new java.io.StringWriter();;
+    java.io.StringWriter writer = new java.io.StringWriter();
     app.LocalJStack.dumpStack(writer);
     System.err.println(writer.toString());
     ```
