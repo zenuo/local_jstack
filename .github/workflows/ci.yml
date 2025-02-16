@@ -50,6 +50,12 @@ jobs:
       # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
       run: ctest -C ${{env.BUILD_TYPE}}
     
+    - name: Windows tweak
+      if: runner.os == 'Windows'
+      run: |
+        dir ${{github.workspace}}/build/src/main/cpp/Release/
+        move ${{github.workspace}}/build/src/main/cpp/Release/localjstack.dll ${{github.workspace}}/build/src/main/cpp/localjstack.dll
+
     - name: Archive artifacts
       uses: actions/upload-artifact@v4
       with:
@@ -57,7 +63,7 @@ jobs:
         path: |
           ${{github.workspace}}/build/src/main/cpp/liblocaljstack.so.0.1
           ${{github.workspace}}/build/src/main/cpp/liblocaljstack.0.1.dylib
-          ${{github.workspace}}/build/src/main/cpp/release/localjstack.dll
+          ${{github.workspace}}/build/src/main/cpp/localjstack.dll
         retention-days: 1
         if-no-files-found: ignore
   build-jar:
