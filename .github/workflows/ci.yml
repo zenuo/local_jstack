@@ -57,7 +57,7 @@ jobs:
         path: |
           ${{github.workspace}}/build/src/main/cpp/liblocaljstack.so.0.1
           ${{github.workspace}}/build/src/main/cpp/liblocaljstack.0.1.dylib
-          ${{github.workspace}}/build/src/main/cpp/localjstack.dll
+          ${{github.workspace}}/build/src/main/cpp/Release/localjstack.dll
         retention-days: 1
         if-no-files-found: ignore
   build-jar:
