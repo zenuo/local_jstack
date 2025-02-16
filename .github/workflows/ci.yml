@@ -25,7 +25,7 @@ jobs:
           #   os: windows-latest
           #   target: x86_64-pc-windows-msvc
           - build_name: macos-x86_64
-            os: macos-14
+            os: macos-latest
             target: x86_64-apple-darwin
           # - build_name: macos-aarch64
           #   os: macos-14
