@@ -5,47 +5,66 @@
 #include <fstream>
 #include <sstream>
 #include <string>
-#include <unistd.h>
 #include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
+// #include <sys/stat.h>
 
-#ifdef __APPLE__
+
+// 操作系统检测宏
+#if defined(_WIN32) || defined(_WIN64)
+    #define OS_WINDOWS
+#elif defined(__APPLE__) && defined(__MACH__)
+    #define OS_MACOS
+#elif defined(__linux__)
+    #define OS_LINUX
+#else
+    #error "Unknown operating system"
+#endif
+
+#ifdef OS_WINDOWS
+#include <windows.h>
+#include <psapi.h>
+#elif defined(OS_MACOS)
 #include <mach-o/dyld.h>
 #include <mach-o/getsect.h>
 #include <dlfcn.h>
+#elif defined(OS_LINUX)
+#include <dlfcn.h>
+#include <link.h>
 #endif
 
 typedef jint (*ThreadDumpFunc)(AttachOperation *, outputStream *);
 
 static ThreadDumpFunc thread_dump = nullptr;
 
-#ifndef __APPLE__
-uintptr_t get_libjvm_base_address(pid_t pid)
+#ifdef OS_WINDOWS
+uintptr_t getLibraryBaseAddress(const std::string& libraryName)
 {
-    std::stringstream maps_path;
-    maps_path << "/proc/" << pid << "/maps";
-    std::ifstream maps_file(maps_path.str());
-    std::string line;
-    while (std::getline(maps_file, line))
-    {
-        if (line.find("libjvm.so") != std::string::npos)
-        {
-            std::stringstream line_stream(line);
-            std::string address_range;
-            std::getline(line_stream, address_range, ' ');
-            std::stringstream address_stream(address_range);
-            std::string start_address_str;
-            std::getline(address_stream, start_address_str, '-');
-            return std::stoull(start_address_str, nullptr, 16);
+// 获取当前进程句柄
+    HANDLE hProcess = GetCurrentProcess();
+
+    // 枚举当前进程加载的模块
+    HMODULE hModules[1024];
+    DWORD cbNeeded;
+    if (EnumProcessModules(hProcess, hModules, sizeof(hModules), &cbNeeded)) {
+        for (DWORD i = 0; i < (cbNeeded / sizeof(HMODULE)); i++) {
+            char moduleName[MAX_PATH];
+            // 获取模块的完整路径
+            if (GetModuleFileNameExA(hProcess, hModules[i], moduleName, sizeof(moduleName))) {
+                // 检查模块名称是否匹配
+                std::string currentModuleName(moduleName);
+                if (currentModuleName.find(libraryName) != std::string::npos) {
+                    // 返回模块的基地址
+                    return reinterpret_cast<uintptr_t>(hModules[i]);
+                }
+            }
         }
     }
+
+    // 如果未找到，返回 0
     return 0;
 }
-#endif
-
-#ifdef __APPLE__
-uintptr_t get_libjvm_base_address(pid_t pid)
+#elif defined(OS_MACOS)
+uintptr_t getLibraryBaseAddress(const std::string& libraryName)
 {
     // 获取当前进程中加载的动态库数量
     uint32_t count = _dyld_image_count();
@@ -59,7 +78,7 @@ uintptr_t get_libjvm_base_address(pid_t pid)
 
         // 检查动态库名称是否匹配
         std::string currentImageName(imageName);
-        if (currentImageName.find("libjvm.dylib") != std::string::npos) {
+        if (currentImageName.find(libraryName) != std::string::npos) {
             // 返回动态库的基地址
             return (uintptr_t)_dyld_get_image_header(i);
         }
@@ -68,6 +87,29 @@ uintptr_t get_libjvm_base_address(pid_t pid)
     // 如果未找到，返回 0
     return 0;
 }
+#elif defined(OS_LINUX)
+uintptr_t getLibraryBaseAddress(const std::string& libraryName)
+{
+    // 打开动态库
+    void* handle = dlopen(libraryName.c_str(), RTLD_NOW);
+    if (!handle) {
+        std::cerr << "Failed to open library: " << dlerror() << std::endl;
+        return 0;
+    }
+
+    // 获取动态库的链接信息
+    struct link_map* map;
+    if (dlinfo(handle, RTLD_DI_LINKMAP, &map) != 0) {
+        std::cerr << "Failed to get library info: " << dlerror() << std::endl;
+        dlclose(handle);
+        return 0;
+    }
+
+    // 返回动态库的基地址
+    uintptr_t baseAddress = reinterpret_cast<uintptr_t>(map->l_addr);
+    dlclose(handle);
+    return baseAddress;
+}
 #endif
 
 JNIEXPORT void JNICALL Java_app_LocalJStack_init(JNIEnv *env, jclass cls, jlong threadDumpOffset)
@@ -75,8 +117,14 @@ JNIEXPORT void JNICALL Java_app_LocalJStack_init(JNIEnv *env, jclass cls, jlong 
     spdlog::set_level(spdlog::level::debug);
     spdlog::set_pattern("[%Y-%m-%d %H:%M:%S.%e] [%n] [%^---%L---%$] [pid %P thread %t] %v");
 
-    pid_t pid = getpid();
-    uintptr_t libjvm_base = get_libjvm_base_address(pid);
+    uintptr_t libjvm_base = 
+#ifdef OS_WINDOWS
+    getLibraryBaseAddress("libjvm.dll");
+#elif defined(OS_MACOS)
+    getLibraryBaseAddress("libjvm.dylib");
+#elif defined(OS_LINUX)
+    getLibraryBaseAddress("libjvm.so");
+#endif
     uintptr_t threadDumpAddress = threadDumpOffset + libjvm_base;
 
     spdlog::info("libjvm_base:{},threadDumpAddress:{}", libjvm_base, threadDumpAddress);
