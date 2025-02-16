@@ -12,8 +12,16 @@ import java.io.Writer;
 public class LocalJStack {
 
     private static void loadLib() {
-        boolean loadSucceed = false;
         try {
+            // 尝试从系统库路径加载
+            try {
+                System.loadLibrary("localjstack");
+                // 加载成功
+                return;
+            } catch (Exception e) {
+                // ignore
+            }
+
             // 尝试从 JAR 中提取 .so 文件到临时目录
             InputStream in = LocalJStack.class.getResourceAsStream("liblocaljstack.so.0.1");
             File tempFile = File.createTempFile("liblocaljstack", ".so");
@@ -29,26 +37,12 @@ public class LocalJStack {
 
             // 加载 .so 文件
             System.load(tempFile.getAbsolutePath());
-            loadSucceed = true;
-        } catch (Exception e) {
-            loadSucceed = false;
-        }
-        if (loadSucceed) {
-            return;
-        }
-
-        // 尝试从系统库路径加载
-        try {
-            System.loadLibrary("localjstack");
-            // 加载成功
             return;
         } catch (Exception e) {
-            loadSucceed = false;
+            // ignore
         }
 
-        if (!loadSucceed) {
-            throw new RuntimeException("Failed to load liblocaljstack.so");
-        }
+        throw new RuntimeException("Failed to load liblocaljstack.so");
     }
 
     static {

@@ -30,6 +30,7 @@
                 <directory>build/src/main/cpp</directory>
                 <includes>
                     <include>**/liblocaljstack.so.0.1</include>
+                    <include>**/liblocaljstack.0.1.dylib</include>
                 </includes>
             </resource>
         </resources>
