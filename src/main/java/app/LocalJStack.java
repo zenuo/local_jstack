@@ -6,39 +6,43 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Writer;
 
+import app.OsUtils.OSType;
+
 /**
  * 本地JStack
  */
 public class LocalJStack {
 
     private static void loadLib() {
+        // 尝试从系统库路径加载
         try {
-            // 尝试从系统库路径加载
-            try {
-                System.loadLibrary("localjstack");
-                // 加载成功
-                return;
-            } catch (Exception e) {
-                // ignore
-            }
+            System.loadLibrary("localjstack");
+            // 加载成功
+            return;
+        } catch (Throwable e) {
+            // ignore
+        }
 
-            // 尝试从 JAR 中提取 .so 文件到临时目录
-            InputStream in = LocalJStack.class.getResourceAsStream("liblocaljstack.so.0.1");
+        // 尝试从 JAR 中提取 .so 文件到临时目录
+        try {
+            String dynamicLibraryName = getDynamicLibraryName();
+
+            InputStream in = LocalJStack.class.getClassLoader().getResourceAsStream(dynamicLibraryName);
             File tempFile = File.createTempFile("liblocaljstack", ".so");
-            OutputStream out = new FileOutputStream(tempFile);
-
-            byte[] buffer = new byte[1024];
-            int bytesRead;
-            while ((bytesRead = in.read(buffer)) != -1) {
-                out.write(buffer, 0, bytesRead);
+            try (OutputStream out = new FileOutputStream(tempFile)) {
+                byte[] buffer = new byte[1024];
+                int bytesRead;
+                while ((bytesRead = in.read(buffer)) != -1) {
+                    out.write(buffer, 0, bytesRead);
+                }
+            } finally {
+                in.close();    
             }
-            out.close();
-            in.close();
-
+            
             // 加载 .so 文件
             System.load(tempFile.getAbsolutePath());
             return;
-        } catch (Exception e) {
+        } catch (Throwable e) {
             // ignore
         }
 
@@ -70,4 +74,18 @@ public class LocalJStack {
      * @return 执行是否成功，0表示成功
      */
     public static synchronized native int dumpStack(Writer writer);
+
+    private static String getDynamicLibraryName() {
+        OSType osType = OsUtils.getOperatingSystemType();
+        switch (osType) {
+            case MacOS:
+                return "liblocaljstack.dylib";
+        
+            case Linux:
+                return "liblocaljstack.so.0.1";
+        
+            default:
+                throw new RuntimeException("Unsupported OS: " + System.getProperty("os.name"));
+        }
+    }
 }
