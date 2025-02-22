@@ -6,6 +6,10 @@ file(GLOB LibLocalJStack_HEADERS *.h)
 
 add_library(LibLocalJStack SHARED ${LibLocalJStack_SOURCES} ${LibLocalJStack_HEADERS})
 
+if(MSVC)
+    target_link_options(LibLocalJStack PRIVATE /MAP:localjstack.map /MAPINFO:EXPORTS)
+endif()
+
 # link jni
 set(JAVA_AWT_LIBRARY NotNeeded)
 set(JAVA_JVM_LIBRARY NotNeeded)
