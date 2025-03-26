@@ -15,11 +15,16 @@ Thread dump like jstack in local JVM process (not interprocess like jstack in jd
 
     以21.0.5-ms为例，为`4892880`：
 
-    ```
+    ```cmd
     $ nm -t d -C /usr/local/sdkman/candidates/java/21.0.5-ms/lib/server/libjvm.so |grep -F 'thread_dump(AttachOperation*, outputStream*)'
     0000000004892880 t thread_dump(AttachOperation*, outputStream*)
     ```
 
+    若是Windows平台，则需要借助map文件来获取函数偏移量，例如[microsoft-jdk-21.0.3-windows-x64.zip](https://aka.ms/download-jdk/microsoft-jdk-21.0.3-windows-x64.zip)，需要下载微软提供的调试信息[microsoft-jdk-debugsymbols-21.0.3-windows-x64.zip](https://aka.ms/download-jdk/microsoft-jdk-debugsymbols-21.0.3-windows-x64.zip)，然后解压调试信息
+
+    ```cmd
+    findstr "?thread_dump@@YAJPEAVAttachOperation@@PEAVoutputStream@@@Z" .\server\jvm.dll.map | findstr /V unwind
+    ```
 3. 使用java.io.Writer来承接线程栈
     ```java
     import java.io.StringWriter;

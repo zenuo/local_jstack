@@ -83,6 +83,9 @@ public class LocalJStack {
         
             case Linux:
                 return "liblocaljstack.so.0.1";
+            
+            case Windows:
+                return "localjstack.dll";
         
             default:
                 throw new RuntimeException("Unsupported OS: " + System.getProperty("os.name"));
