@@ -1,8 +1,8 @@
 # local_jstack
 
-在本地 JVM 进程（非进程间）中通过臊气的 JNI 方式进行类似 jstack 的线程转储
+Thread dump like jstack in local JVM process (not interprocess like jstack in jdk) by dirty JNI way. 
 
-Thread dump like jstack in local JVM process (not interprocess) by dirty JNI way
+在本地 JVM 进程（而不是jdk中jstack的进程间）中通过粗糙的 JNI 方式进行类似 jstack 的线程转储
 
 ## 支持的平台 Supported Platform
 
