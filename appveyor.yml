@@ -1,0 +1,22 @@
+# https://github.com/gabime/spdlog/blob/v1.x/appveyor.yml
+version: 1.0.{build}
+image: Visual Studio 2017
+environment:
+  matrix:
+    - GENERATOR: '"Visual Studio 17 2022" -A x64'
+      BUILD_TYPE: Release
+      CXX_STANDARD: 20
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2022
+build_script:
+  - cmd: >-
+      set
+
+      mkdir build
+
+      cd build
+
+      set PATH=%PATH%;C:\Program Files\Git\usr\bin
+
+      cmake -G %GENERATOR% -D CMAKE_BUILD_TYPE=%BUILD_TYPE% -D CMAKE_CXX_STANDARD=%CXX_STANDARD% ..
+
+      cmake --build . --config %BUILD_TYPE% --target LibLocalJStack

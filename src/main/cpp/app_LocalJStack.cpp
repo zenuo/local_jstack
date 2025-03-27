@@ -111,7 +111,7 @@ JNIEXPORT void JNICALL Java_app_LocalJStack_init(JNIEnv *env, jclass cls, jlong 
 {
     uintptr_t libjvm_base = 
 #ifdef OS_WINDOWS
-    getLibraryBaseAddress("libjvm.dll");
+    getLibraryBaseAddress("jvm.dll");
 #elif defined(OS_MACOS)
     getLibraryBaseAddress("libjvm.dylib");
 #elif defined(OS_LINUX)
