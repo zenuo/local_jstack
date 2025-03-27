@@ -25,7 +25,8 @@ Thread dump like jstack in local JVM process (not interprocess like jstack in jd
     ```cmd
     findstr "?thread_dump@@YAJPEAVAttachOperation@@PEAVoutputStream@@@Z" .\server\jvm.dll.map | findstr /V unwind
     ```
-3. 使用java.io.Writer来承接线程栈
+
+2. 使用java.io.Writer来承接线程栈
     ```java
     import java.io.StringWriter;
 

@@ -52,7 +52,9 @@ public class LocalJStack {
     static {
         loadLib();
 
-        long threadDumpOffset = Long.valueOf(System.getProperty("localjstack.threadDumpOffset", "0"));
+        String threadDumpOffsetInHex = System.getProperty("localjstack.threadDumpOffset");
+
+        long threadDumpOffset = Long.parseLong(threadDumpOffsetInHex, 16);
 
         init(threadDumpOffset);
     }

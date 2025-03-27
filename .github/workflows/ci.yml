@@ -80,13 +80,6 @@ jobs:
     
     - name: Test Windows
       if: runner.os == 'Windows'
-      strategy:
-      fail-fast: false
-      matrix:
-        include: 
-          - version: microsoft-jdk-21.0.3
-            jdk: https://aka.ms/download-jdk/microsoft-jdk-21.0.3-windows-x64.zip
-            debugsymbols: https://aka.ms/download-jdk/microsoft-jdk-debugsymbols-21.0.3-windows-x64.zip
       run: |
         curl -L ${{ matrix.jdk }} -o jdk.zip
         curl -L ${{ matrix.jdk-debugsymbols }} -o debugsymbols.zip
