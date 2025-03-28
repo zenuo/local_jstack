@@ -1,8 +1,12 @@
 ﻿param(
 [string[]]$jdkVersions,
 [string]$jarPath,
++[string]$dllPath,
 [bool]$download=$false
 )
+
+$jarPath = resolve-path $jarPath
+$dllPath = [System.IO.Path]::GetDirectoryName($(Resolve-Path $dllPath))
 
 function Get-Address-ThreadDump{
     param(
@@ -59,10 +63,9 @@ foreach ($i in $jdkVersions)
     Write-Host "threadDumpAddress found: $threadDumpAddress"
     Write-Host $javaExe.FullName" -Dlocaljstack.threadDumpOffset=$threadDumpAddress -cp $jarPath app.PrintStack"
 
-    $command = "-Dlocaljstack.threadDumpOffset=$threadDumpAddress -cp $jarPath app.PrintStack"
+    $command = "-Dlocaljstack.threadDumpOffset=$threadDumpAddress -Djava.library.path=$dllPath -cp $jarPath app.PrintStack"
 
-    $proc = Start-Process -FilePath $javaExe.FullName -ArgumentList $command -PassThru -Wait
-
+    Write-Host $javaExe.FullName $command
     if ($proc.ExitCode -ne 0) {
         Write-Warning "$i exit with status code $($proc.ExitCode)"
     }
