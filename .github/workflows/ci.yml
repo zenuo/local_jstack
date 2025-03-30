@@ -78,16 +78,16 @@ jobs:
       # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
       run: ctest -C ${{env.BUILD_TYPE}}
     
+    - uses: actions/download-artifact@v4
+      with:
+        path: build
+        name: localjstack.jar
+    
     - name: Test Windows
       if: runner.os == 'Windows'
       run: |
-        curl -L ${{ matrix.jdk }} -o jdk.zip
-        curl -L ${{ matrix.jdk-debugsymbols }} -o debugsymbols.zip
-        7z x jdk.zip -ojdk
-        dir jdk
-        7z x jdk-debugsymbols.zip -odebugsymbols
-        dir debugsymbols
-        dir ${{github.workspace}}/build/src/main/cpp/Release/
+        7z x ${{github.workspace}}/build/localjstack.jar.zip -o${{github.workspace}}/build/
+        .\testThreadDump.ps1 -jdkPath ${{github.workspace}}/build -jdkVersions 11.0.26, 17.0.14, 21.0.3 -jarPath ${{github.workspace}}/build/localjstack-0.0.1.jar -dllPath ${{github.workspace}}/build/src/main/cpp/Release/localjstack.dll
         move ${{github.workspace}}/build/src/main/cpp/Release/localjstack.dll ${{github.workspace}}/build/src/main/cpp/localjstack.dll
 
     - name: Archive artifacts
