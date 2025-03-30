@@ -28,7 +28,7 @@ build_script:
 
       cmake --build . --config %BUILD_TYPE% --target LibLocalJStack
 
-      ls build\src\main\cpp\Release\
+      ls src\main\cpp\Release\
 
       cd ..
 
