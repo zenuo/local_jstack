@@ -1,11 +1,8 @@
 # https://github.com/gabime/spdlog/blob/v1.x/appveyor.yml
 version: 1.0.{build}
 
-# branches to build
-branches:
-  # whitelist
-  only:
-    - main
+only_commits:
+  message: /build/
 
 image: Visual Studio 2017
 environment:
