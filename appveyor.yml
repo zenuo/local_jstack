@@ -1,7 +1,12 @@
 # https://github.com/gabime/spdlog/blob/v1.x/appveyor.yml
 version: 1.0.{build}
-# Do not build feature branch with open Pull Requests
-#skip_branch_with_pr: true
+
+# branches to build
+branches:
+  # whitelist
+  only:
+    - main
+
 image: Visual Studio 2017
 environment:
   matrix:

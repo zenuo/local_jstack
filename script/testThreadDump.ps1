@@ -29,7 +29,7 @@ foreach ($i in $jdkVersions)
     if ($download) {
         Write-Host $jdkUrl
         Invoke-WebRequest $jdkUrl -OutFile jdk.zip
-        7z x $i\jdk.zip -ojdk
+        7z x jdk.zip -ojdk
     }
     
     $foundJavaExes = Get-ChildItem -Path jdk -Recurse -Filter java.exe
