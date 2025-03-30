@@ -99,9 +99,9 @@ JNIEXPORT void JNICALL Java_app_LocalJStack_init(JNIEnv *env, jclass cls, jlong 
     FARPROC funcAddr = (FARPROC)((BYTE*)hModule + threadDumpOffset);
     thread_dump = (ThreadDumpFunc)funcAddr;
 #elif defined(OS_MACOS)
-    thread_dump =getLibraryBaseAddress("libjvm.dylib") + threadDumpOffset;
+    thread_dump = (ThreadDumpFunc)(getLibraryBaseAddress("libjvm.dylib") + threadDumpOffset);
 #elif defined(OS_LINUX)
-    thread_dump =getLibraryBaseAddress("libjvm.so") + threadDumpOffset;
+    thread_dump =(ThreadDumpFunc)(getLibraryBaseAddress("libjvm.so") + threadDumpOffset);
 #endif
 }
 
