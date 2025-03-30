@@ -80,14 +80,14 @@ jobs:
     
     - uses: actions/download-artifact@v4
       with:
-        path: build
+        path: ${{github.workspace}}/build
         name: localjstack.jar
     
     - name: Test Windows
       if: runner.os == 'Windows'
       run: |
-        7z x ${{github.workspace}}/build/localjstack.jar.zip -o${{github.workspace}}/build/
-        ${{github.workspace}}/script/testThreadDump.ps1 -jdkPath ${{github.workspace}}/build -jdkVersions 11.0.26, 17.0.14, 21.0.3 -jarPath ${{github.workspace}}/build/localjstack-0.0.1.jar -dllPath ${{github.workspace}}/build/src/main/cpp/Release/localjstack.dll
+        dir ${{github.workspace}}/build
+        ${{github.workspace}}/script/testThreadDump.ps1 -download true -jdkPath ${{github.workspace}}/build -jdkVersions 11.0.26, 17.0.14, 21.0.3 -jarPath ${{github.workspace}}/build/localjstack-0.0.1.jar -dllPath ${{github.workspace}}/build/src/main/cpp/Release/localjstack.dll
         move ${{github.workspace}}/build/src/main/cpp/Release/localjstack.dll ${{github.workspace}}/build/src/main/cpp/localjstack.dll
 
     - name: Archive artifacts
