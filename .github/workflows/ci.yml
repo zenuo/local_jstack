@@ -35,7 +35,7 @@ jobs:
     - run: mkdir staging && cp target/*.jar staging
     - uses: actions/upload-artifact@v4
       with:
-        name: localjstack.jar
+        name: jar-without-native
         path: staging
   build-native:
     needs: build-jar-without-native
@@ -71,17 +71,17 @@ jobs:
       # Build your program with the given configuration
       run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
 
+    - uses: actions/download-artifact@v4
+      with:
+        path: ${{github.workspace}}/build
+        name: jar-without-native
+
     - name: Test Unix
       working-directory: ${{github.workspace}}/build
       if: runner.os != 'Windows'
       # Execute tests defined by the CMake configuration.
       # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
       run: ctest -C ${{env.BUILD_TYPE}}
-    
-    - uses: actions/download-artifact@v4
-      with:
-        path: ${{github.workspace}}/build
-        name: localjstack.jar
     
     - name: Test Windows
       if: runner.os == 'Windows'

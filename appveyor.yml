@@ -1,6 +1,9 @@
 # https://github.com/gabime/spdlog/blob/v1.x/appveyor.yml
 version: 1.0.{build}
 
+# Do not build feature branch with open Pull Requests
+skip_branch_with_pr: true
+
 only_commits:
   message: /build/
 
@@ -11,9 +14,6 @@ environment:
       BUILD_TYPE: Release
       CXX_STANDARD: 20
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2022
-# build cache to preserve files/folders between builds
-cache:
-  - ./build/jdks
 build_script:
   - cmd: >-
       set
@@ -28,12 +28,19 @@ build_script:
 
       cmake --build . --config %BUILD_TYPE% --target LibLocalJStack
 
+      ls build\src\main\cpp\Release\
+
       cd ..
 
-      mvn clean package
+      mvn -DskipTests=true package
 
 test_script:
   - ps: >-
       mkdir -Force ./build/jdks
       
       ./script/testThreadDump.ps1 -jdkPath ./build/jdks -jdkVersions 11.0.26, 17.0.14, 21.0.3 -jarPath ./target/localjstack-0.0.1.jar -dllPath ./build/src/main/cpp/Release/localjstack.dll -download
+
+artifacts:
+
+  - path: build\src\main\cpp\Release\localjstack.dll
+  - path: target\localjstack-0.0.1.jar
