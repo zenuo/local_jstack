@@ -1,4 +1,3 @@
-cmake_minimum_required(VERSION 3.16)
 project(LibLocalJStack LANGUAGES CXX)
 
 file(GLOB LibLocalJStack_SOURCES *.cpp)
@@ -9,6 +8,11 @@ add_library(LibLocalJStack SHARED ${LibLocalJStack_SOURCES} ${LibLocalJStack_HEA
 if(MSVC)
     target_link_options(LibLocalJStack PRIVATE /MAP:localjstack.map /MAPINFO:EXPORTS)
 endif()
+
+# 设置头文件路径
+target_include_directories(LibLocalJStack PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}
+)
 
 # link jni
 set(JAVA_AWT_LIBRARY NotNeeded)
