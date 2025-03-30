@@ -87,7 +87,7 @@ jobs:
       if: runner.os == 'Windows'
       run: |
         7z x ${{github.workspace}}/build/localjstack.jar.zip -o${{github.workspace}}/build/
-        .\testThreadDump.ps1 -jdkPath ${{github.workspace}}/build -jdkVersions 11.0.26, 17.0.14, 21.0.3 -jarPath ${{github.workspace}}/build/localjstack-0.0.1.jar -dllPath ${{github.workspace}}/build/src/main/cpp/Release/localjstack.dll
+        ${{github.workspace}}/script/testThreadDump.ps1 -jdkPath ${{github.workspace}}/build -jdkVersions 11.0.26, 17.0.14, 21.0.3 -jarPath ${{github.workspace}}/build/localjstack-0.0.1.jar -dllPath ${{github.workspace}}/build/src/main/cpp/Release/localjstack.dll
         move ${{github.workspace}}/build/src/main/cpp/Release/localjstack.dll ${{github.workspace}}/build/src/main/cpp/localjstack.dll
 
     - name: Archive artifacts
