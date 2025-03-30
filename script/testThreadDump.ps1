@@ -4,7 +4,7 @@ param(
 [Parameter(Mandatory=$true)][string[]]$jdkVersions,
 [Parameter(Mandatory=$true)][string]$jarPath,
 [Parameter(Mandatory=$true)][string]$dllPath,
-[bool]$download=$false,
+[switch]$download,
 [Parameter(Mandatory=$true)][string]$jdkPath
 )
 
