@@ -28,7 +28,7 @@ foreach ($i in $jdkVersions)
     cd $i
     if ($download) {
         Write-Host $jdkUrl
-        Invoke-WebRequest $jdkUrl -OutFile $i\jdk.zip
+        Invoke-WebRequest $jdkUrl -OutFile jdk.zip
         7z x $i\jdk.zip -ojdk
     }
     
