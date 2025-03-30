@@ -9,7 +9,6 @@ environment:
       BUILD_TYPE: Release
       CXX_STANDARD: 20
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2022
-      TEST_JDK_VERSIONS: 11.0.26, 17.0.14, 21.0.3
 # build cache to preserve files/folders between builds
 cache:
   - ./build/jdks
@@ -35,4 +34,4 @@ test_script:
   - ps: >-
       mkdir -Force ./build/jdks
       
-      ./script/testThreadDump.ps1 -jdkPath ./build/jdks -jdkVersions $env:TEST_JDK_VERSIONS -jarPath ./target/localjstack-0.0.1.jar -dllPath ./build/src/main/cpp/Release/localjstack.dll -download
+      ./script/testThreadDump.ps1 -jdkPath ./build/jdks -jdkVersions 11.0.26, 17.0.14, 21.0.3 -jarPath ./target/localjstack-0.0.1.jar -dllPath ./build/src/main/cpp/Release/localjstack.dll -download
