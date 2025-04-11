@@ -18,6 +18,7 @@
 #ifdef OS_WINDOWS
 #include <windows.h>
 #include <psapi.h>
+
 #elif defined(OS_MACOS)
 #include <mach-o/dyld.h>
 #include <mach-o/getsect.h>
@@ -31,32 +32,15 @@ typedef jint (*ThreadDumpFunc)(AttachOperation *, outputStream *);
 
 static ThreadDumpFunc thread_dump = nullptr;
 
+#define MYLIB_EXPORTS
+
 #ifdef OS_WINDOWS
 uintptr_t getLibraryBaseAddress(const std::string& libraryName)
 {
-// 获取当前进程句柄
-    HANDLE hProcess = GetCurrentProcess();
-
-    // 枚举当前进程加载的模块
-    HMODULE hModules[1024];
-    DWORD cbNeeded;
-    if (EnumProcessModules(hProcess, hModules, sizeof(hModules), &cbNeeded)) {
-        for (DWORD i = 0; i < (cbNeeded / sizeof(HMODULE)); i++) {
-            char moduleName[MAX_PATH];
-            // 获取模块的完整路径
-            if (GetModuleFileNameExA(hProcess, hModules[i], moduleName, sizeof(moduleName))) {
-                // 检查模块名称是否匹配
-                std::string currentModuleName(moduleName);
-                if (currentModuleName.find(libraryName) != std::string::npos) {
-                    // 返回模块的基地址
-                    return reinterpret_cast<uintptr_t>(hModules[i]);
-                }
-            }
-        }
-    }
+    HMODULE hModule = GetModuleHandleA("jvm.dll");
 
     // 如果未找到，返回 0
-    return 0;
+    return reinterpret_cast<uintptr_t>(hModule);
 }
 #elif defined(OS_MACOS)
 uintptr_t getLibraryBaseAddress(const std::string& libraryName)
@@ -109,17 +93,16 @@ uintptr_t getLibraryBaseAddress(const std::string& libraryName)
 
 JNIEXPORT void JNICALL Java_app_LocalJStack_init(JNIEnv *env, jclass cls, jlong threadDumpOffset)
 {
-    uintptr_t libjvm_base = 
 #ifdef OS_WINDOWS
-    getLibraryBaseAddress("libjvm.dll");
+    // uintptr_t libjvm_base = getLibraryBaseAddress("jvm.dll");
+    HMODULE hModule = GetModuleHandleA("jvm.dll");
+    FARPROC funcAddr = (FARPROC)((BYTE*)hModule + threadDumpOffset);
+    thread_dump = (ThreadDumpFunc)funcAddr;
 #elif defined(OS_MACOS)
-    getLibraryBaseAddress("libjvm.dylib");
+    thread_dump = (ThreadDumpFunc)(getLibraryBaseAddress("libjvm.dylib") + threadDumpOffset);
 #elif defined(OS_LINUX)
-    getLibraryBaseAddress("libjvm.so");
+    thread_dump =(ThreadDumpFunc)(getLibraryBaseAddress("libjvm.so") + threadDumpOffset);
 #endif
-    uintptr_t threadDumpAddress = threadDumpOffset + libjvm_base;
-
-    thread_dump = (ThreadDumpFunc)threadDumpAddress;
 }
 
 JNIEXPORT jint JNICALL Java_app_LocalJStack_dumpStack(JNIEnv *env, jclass cls, jobject writer)
